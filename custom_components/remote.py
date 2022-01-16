@@ -47,10 +47,12 @@ class BroadlinkRemote():
         except (BroadlinkException, OSError) as err:
             _LOGGER.error("Error during send_command: %s", err)
 
-    async def learn_command(self, button_name): 
+    async def learn_command(self): 
         """Learn command from the device.
         Returns code to save in the storage"""
+        _LOGGER.info("Learning command from device", self._device.host[0])
         try: 
+            _LOGGER.info("Entering learning mode")
             await self.async_request(self._device.enter_learning())
         except (BroadlinkException, OSError) as err:
             _LOGGER.debug("Failed to enter learning mode: %s", err)
@@ -85,8 +87,7 @@ class BroadlinkRemote():
                 notification_id="learn_command"
             )
 
-            
-
+        
     async def async_request(self, function, *args, **kwargs):
         """Send a request to the device."""
         request = partial(function, *args, **kwargs)

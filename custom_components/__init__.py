@@ -38,26 +38,33 @@ async def async_setup(hass, config):
 
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][DEVICE_STORAGE] = await load_from_storage(hass)
+    hass.data[DOMAIN][DEVICE_INFO] = {}
     devices = blk.discover(timeout = TIMEOUT)
     for device in devices: 
         try: 
+            _LOGGER.info("Current storage information is: %s", hass.data[DOMAIN][DEVICE_STORAGE])
             formated_mac = format_mac(device.mac)
             if formated_mac not in hass.data[DOMAIN][DEVICE_STORAGE] and device.type in DOMAINS_AND_TYPES[Platform.REMOTE]:
-                hass.data[DOMAIN][DEVICE_STORAGE][formated_mac] = {
+                _LOGGER.warning("New device found: %s", formated_mac)
+                info = {
                 DEVICE_MAC: formated_mac, 
                 DEVICE_TYPE: device.type,
                 COMMANDS: {} 
-             }
+                }
+
+                hass.data[DOMAIN][DEVICE_STORAGE][formated_mac] = info
+                hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, commands)
             
-            elif device.mac in hass.data[DOMAIN][DEVICE_STORAGE]:
+            elif formated_mac in hass.data[DOMAIN][DEVICE_STORAGE]:
+                _LOGGER.warning("Device already in storage, fecthing commands")
                 commands = hass.data[DOMAIN][DEVICE_STORAGE][formated_mac][COMMANDS]
                 hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, commands)
             
             elif device.type not in DOMAINS_AND_TYPES[Platform.REMOTE]: 
                 _LOGGER.warning("Device of type %s not supported", device.type)
 
-        except: 
-            _LOGGER.info("Device could mac not be reached %s. Might need to authenticate", device)
+        except: #TODD: Improve error handling
+            _LOGGER.info("Device could mac not be reached %s.", device)
 
     await save_to_storage(hass, hass.data[DOMAIN][DEVICE_STORAGE])
 
@@ -116,14 +123,14 @@ async def enter_broadlink_remote_learning_mode(
     """Enter learning mode for a broadlink remote"""  
     mac = msg["mac"]
     button_name = msg["button_name"]
-
     remote = hass.data[DOMAIN][DEVICE_INFO].get(mac)
-    decoded_code = remote.learn_command(button_name)
+    decoded_code = await remote.learn_command()
 
     hass.data[DOMAIN][DEVICE_INFO][mac] = remote
     hass.data[DOMAIN][DEVICE_STORAGE][mac].update({button_name: decoded_code})
     
     sucess = True if decoded_code else False
+    _LOGGER.info(decoded_code)
     connection.send_result(msg["id"], {"sucess": sucess}) 
 
 
