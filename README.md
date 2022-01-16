@@ -7,7 +7,7 @@ The main point of this integration is to communicate with the broadlink custom_c
 
 ## Why?
 
-Although great the classic broadlink integration does not allow to run discover (AFAIK)
+Although great, the classic broadlink integration does not allow to run discover (AFAIK)
 
 ## Features
 
