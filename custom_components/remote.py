@@ -28,39 +28,44 @@ LEARNING_TIMEOUT = timedelta(seconds=30)
 class BroadlinkRemote():
     """Representation of a Broadlink remote (Not an entity)."""
 
-    def __init__(self, hass, device, command_list = {}):
-        """Initialize the entity."""
+    def __init__(self, hass, device, preset_list = {}):
+        """Initialize the entity.
+        Args:
+        @hass: Homeassistant - The homeassistant object 
+        @device: str - The device type
+        @command_list: a dict of presets to be used by the entity. Each preset is a dictionary with the key being the name of the button and the value being the code to send."""
+        
         self.hass  = hass
         self._device = device 
-        self.command_list = command_list
+        self.preset_list = preset_list
 
-    async def send_command(self, button_name): 
+
+    async def send_command(self, button_name, preset): 
         """Send a command with the button name"""
-        code = self.commands.get(button_name)
-        code = decode_packet(code)
+        code = self.preset_list[preset].get(button_name)
         if code is None:
             _LOGGER.warning("No command registered for %s", button_name)
             #TODO: send notification 
             return 
         try:
+            code = decode_packet(code)
             await self.async_request(self._device.send_data, code)
         except (BroadlinkException, OSError) as err:
             _LOGGER.error("Error during send_command: %s", err)
 
-    async def learn_command(self): 
+
+    async def learn_command(self, button_name, preset): 
         """Learn command from the device.
         Returns code to save in the storage"""
-        _LOGGER.info("Learning command from device", self._device.host[0])
         try: 
-            _LOGGER.info("Entering learning mode")
-            await self.async_request(self._device.enter_learning())
+            await self.async_request(self._device.enter_learning)
         except (BroadlinkException, OSError) as err:
             _LOGGER.debug("Failed to enter learning mode: %s", err)
             raise
 
         self.hass.components.persistent_notification.async_create(
             # f"Press the '{command}' button.",
-            "This is at test notification",
+            "Pressione um botão do dispositivo para associar ao comando '{}'".format(button_name),
             title="Learn command",
             notification_id="learn_command",
         )
@@ -75,7 +80,10 @@ class BroadlinkRemote():
                 except (ReadError, StorageError):
                     continue
                 
-                return b64encode(code).decode("utf8")
+
+                decoded_code = b64encode(code).decode("utf8")
+                self.preset_list[preset][button_name] = decoded_code
+                return decoded_code
 
             raise TimeoutError(
                 "No infrared code received within "

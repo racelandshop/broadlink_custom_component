@@ -13,7 +13,7 @@ def decode_packet(value):
     return b64decode(value)
 
 
-#TODO: no used, implement later as I'm using these in the code indirectly
+#TODO: not used, implement later as I'm using these in the code indirectly
 # def mac_address(mac):
 #     """Validate and convert a MAC address to bytes."""
 #     mac = cv.string(mac)
