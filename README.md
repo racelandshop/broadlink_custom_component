@@ -7,7 +7,7 @@ The main point of this integration is to communicate with the broadlink custom_c
 
 ## Why?
 
-Although great, the classic broadlink integration does not allow to run discover (AFAIK)
+Although great, the classic broadlink integration does not allow to run discover (AFAIK). The main goal of this integration is a solution that works out of the box without the need to configure anything 
 
 ## Features
 
@@ -18,7 +18,7 @@ Although great, the classic broadlink integration does not allow to run discover
 ## Configuration
 
 To configure simply put this line in the configuration.yaml file: 
-
+Also ensure the broadlink devices have been connected to your network
 
 ```
 broadlink_custom_card:
