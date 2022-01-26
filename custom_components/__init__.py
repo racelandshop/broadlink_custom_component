@@ -112,7 +112,9 @@ async def send_broadlink_devices(
     hass: HomeAssistant, connection: ActiveConnection, msg: dict
 ):
     """Send saved broadlink devices to the frontend"""  
-    devices = hass.data[DOMAIN][DEVICE_JSON]
+    devices = [] 
+    for device_mac in hass.data[DOMAIN][DEVICE_JSON]: 
+        devices.append(device_mac)
     connection.send_result(msg["id"], {"sucess": True, "devices": devices}) 
 
 
