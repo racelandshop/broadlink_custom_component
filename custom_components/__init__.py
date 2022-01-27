@@ -1,6 +1,7 @@
 """The broadlink card integration"""
 
-from .const import DEVICE_JSON, TIMEOUT, DOMAIN, DOMAINS_AND_TYPES, DEVICE_INFO, PRESETS, MAC, DEVICE_MAC, DEVICE_TYPE
+from pickle import TRUE
+from .const import DEVICE_JSON, TIMEOUT, DOMAIN, DOMAINS_AND_TYPES, DEVICE_INFO, PRESETS, MAC, DEVICE_MAC, DEVICE_TYPE, ACTIVE
 from .remote import BroadlinkRemote
 from .helpers import format_mac
 
@@ -26,23 +27,37 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ##TODO: Type-hinting
+##TODO: Fun stuff with presets (create, delete, copy, give custom name, associate a preset to a command type and so ons)
 ##TODO: Implement error handling
-##TODO: Possibly refactor code so a command entity is registered for each device (which I think would eliminate the need to save the commands in the storage)
-##TODO: Limit search to remotes and not other broadlink devices! <- IMPORTANTE
-##TODO: Handling the toggle command (not sure what it is)
+##TODO: Possibly refactor code so a
+##TODO: Limit search to remotes and not other broadlink devices! < command entity is registered for each device (which I think would eliminate the need to save the commands in the storage)- IMPORTANTE
+##TODO: Handling the toggle command?(not sure what it is but its avaiable in the broadlink integration )
 ##TODO: Send nofication!! -> persistent notifications might not be the best for this
+##TODO: Send notification of new broadlink discovered
 
 
-##TODO: IMPORTANT: the command in the frontend should save the signal data. Not the backend
 
+#TODO: The card in the frontend should not render until the discovery process is done.
 async def async_setup(hass, config):
     """Setup broadlink integration"""
 
-    #TODO: The card in the frontend should not render until the discovery process is done.
 
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][DEVICE_JSON] = await load_from_storage(hass)
     hass.data[DOMAIN][DEVICE_INFO] = {}
+    await discover_devices(hass)
+
+    hass.components.websocket_api.async_register_command(discover_new_broadlink_devices)
+    hass.components.websocket_api.async_register_command(send_broadlink_devices)
+    hass.components.websocket_api.async_register_command(enter_broadlink_remote_learning_mode)
+    hass.components.websocket_api.async_register_command(send_command_broadlink)
+    return True
+
+
+
+async def discover_devices(hass): 
+    """Discover devices in the network and update the list"""
+    
     devices = blk.discover(timeout = TIMEOUT)
     for device in devices: 
         try: 
@@ -52,7 +67,8 @@ async def async_setup(hass, config):
                 info = {
                     DEVICE_MAC: formated_mac, 
                     DEVICE_TYPE: device.type,
-                    PRESETS: {"1": {}, "2": {}, "3": {}, "4": {}, "5": {}}
+                    PRESETS: {"1": {}, "2": {}, "3": {}, "4": {}, "5": {}}, 
+                    ACTIVE: True
                 }
 
                 hass.data[DOMAIN][DEVICE_JSON][formated_mac] = info
@@ -61,6 +77,7 @@ async def async_setup(hass, config):
             elif formated_mac in hass.data[DOMAIN][DEVICE_JSON]:
                 _LOGGER.warning("Device already in storage, fecthing commands presets")
                 preset_info = hass.data[DOMAIN][DEVICE_JSON][formated_mac][PRESETS]
+                hass.data[DOMAIN][DEVICE_JSON][formated_mac][ACTIVE] = True
                 hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, preset_info)
             
             elif device.type not in DOMAINS_AND_TYPES[Platform.REMOTE]: 
@@ -69,13 +86,16 @@ async def async_setup(hass, config):
         except: #TODO: Improve error handling
             _LOGGER.info("Device could mac not be reached %s.", device)
 
-    await save_to_storage(hass, hass.data[DOMAIN][DEVICE_JSON])
 
-    hass.components.websocket_api.async_register_command(discover_new_broadlink_devices)
-    hass.components.websocket_api.async_register_command(send_broadlink_devices)
-    hass.components.websocket_api.async_register_command(enter_broadlink_remote_learning_mode)
-    hass.components.websocket_api.async_register_command(send_command_broadlink)
-    return True
+    #Deactivate devices that are are not captured by the network
+    mac_list = [format_mac(device.mac) for device in devices]
+    for registered_mac in hass.data[DOMAIN][DEVICE_JSON].keys(): 
+        if registered_mac not in mac_list:
+            hass.data[DOMAIN][DEVICE_JSON][registered_mac][ACTIVE] = False
+
+
+    await save_to_storage(hass, hass.data[DOMAIN][DEVICE_JSON])
+    
 
 
 @websocket_api.websocket_command({vol.Required("type"): "broadlink/discover"})
@@ -85,25 +105,9 @@ async def discover_new_broadlink_devices(
 ):
     """Discover broadlink devices"""
 
-    devices = blk.discover(timeout = TIMEOUT) 
-    device_info = {}
-    for device in devices:
-        if device.type in DOMAINS_AND_TYPES[Platform.REMOTE]:
-            formated_mac = format_mac(device.mac)
-            device_info[formated_mac] = {
-                DEVICE_MAC: formated_mac, 
-                DEVICE_TYPE: device.type,
-                PRESETS: {"1": {}, "2": {}, "3": {}, "4": {}, "5": {}},
-            }
-        else: 
-            _LOGGER.debug("The device type %s is being ignored", device.type)
-
-        hass.data[DOMAIN][DEVICE_INFO][DEVICE_MAC] = BroadlinkRemote(hass, device)
-    
-    hass.data[DOMAIN][DEVICE_JSON] = device_info
-    await save_to_storage(hass, device_info)
-    
-    connection.send_result(msg["id"], {"sucess": True, "n_devices": len(device_info)}) 
+    await discover_devices(hass)
+    devices = get_active_devices(hass) 
+    connection.send_result(msg["id"], {"sucess": True, "devices": devices}) 
 
 
 @websocket_api.websocket_command({vol.Required("type"): "broadlink/send_devices"})
@@ -112,9 +116,7 @@ async def send_broadlink_devices(
     hass: HomeAssistant, connection: ActiveConnection, msg: dict
 ):
     """Send saved broadlink devices to the frontend"""  
-    devices = [] 
-    for device_mac in hass.data[DOMAIN][DEVICE_JSON]: 
-        devices.append(device_mac)
+    devices = get_active_devices(hass)
     connection.send_result(msg["id"], {"sucess": True, "devices": devices}) 
 
 
@@ -153,6 +155,18 @@ async def send_command_broadlink(
     connection.send_result(msg["id"], {"sucess": True}) 
     
 
+def get_active_devices(hass): 
+    """Get all active devices and return their information"""
+    devices = [] 
+    for device_mac in hass.data[DOMAIN][DEVICE_JSON]: 
+        if hass.data[DOMAIN][DEVICE_JSON][device_mac][ACTIVE]: 
+            devices.append({
+                MAC: device_mac, 
+                DEVICE_TYPE: hass.data[DOMAIN][DEVICE_JSON][device_mac][DEVICE_TYPE],
+                #PRESETS: len(hass.data[DOMAIN][DEVICE_JSON][device_mac][PRESETS])
+            })
+    return devices
+            
 async def save_to_storage(hass, data):
     """Save data to storage."""
     store = Store(hass, version = 1, key = "broadlink_devices")
