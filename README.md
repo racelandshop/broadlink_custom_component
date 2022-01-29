@@ -25,4 +25,4 @@ broadlink_custom_card:
 ```
 
 
-Nao esquecer de dar contribuição ao techno broadlink 
+Nao esquecer de mensionar o techno broadlink 
