@@ -39,6 +39,7 @@ class BroadlinkRemote():
         self.hass  = hass
         self._device = device 
         self.preset_list = preset_list
+        self.learning = False
 
 
     async def send_command(self, button_name, preset): 
@@ -61,6 +62,7 @@ class BroadlinkRemote():
     async def learn_command(self, button_name, preset): 
         """Learn command from the device.
         Returns code to save in the storage"""
+        self.learning = True
         try: 
             await self.async_request(self._device.enter_learning)
         except (BroadlinkException, OSError) as err:
@@ -87,10 +89,11 @@ class BroadlinkRemote():
             self.hass.components.persistent_notification.async_dismiss(
                notification_id="learn_command"
             )
+            self.learning = False
             return decoded_code
        
 
-        _LOGGER.info("Learning failed")
+        _LOGGER.debug("Learn command timed out")
         self.hass.components.persistent_notification.async_create(
             "O dispositivo {} não capturou nenhum comando. Tente novamente".format(self._device.type),
             title="Aprender comando",

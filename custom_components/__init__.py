@@ -124,12 +124,20 @@ async def enter_broadlink_remote_learning_mode(
     button_name = msg["button_name"]
     preset = msg["preset"]
     remote = hass.data[DOMAIN][DEVICE_INFO][mac]
-
-    decoded_code = await remote.learn_command(button_name, preset)
-    hass.data[DOMAIN][DEVICE_JSON][mac][PRESETS][preset].update({button_name: decoded_code})
-    await save_to_storage(hass, hass.data[DOMAIN][DEVICE_JSON])
-    connection.send_result(msg["id"], {"code": decoded_code}) 
-
+    if remote.learning:
+        hass.components.persistent_notification.async_create(f"Já está a configurar o botão {button_name}. Termine este processo antes de tentar configurar outro botão.", 
+            title="Aviso", 
+            notification_id= "learning_mode_warning")
+        connection.send_result(msg["id"], {"sucess": False ,"code": None})
+    else:
+        decoded_code = await remote.learn_command(button_name, preset)
+        hass.data[DOMAIN][DEVICE_JSON][mac][PRESETS][preset].update({button_name: decoded_code})
+        await save_to_storage(hass, hass.data[DOMAIN][DEVICE_JSON])
+        hass.components.persistent_notification.async_dismiss(
+                    notification_id="learning_mode_warning"
+                )
+        connection.send_result(msg["id"], {"sucess": True ,"code": decoded_code})
+ 
 
 @websocket_api.websocket_command({vol.Required("type"): "broadlink/send_command", vol.Required("mac"): str, vol.Required("button_name"): str, vol.Required("preset"): str})
 @websocket_api.async_response
