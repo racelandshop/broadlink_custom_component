@@ -23,21 +23,7 @@ import voluptuous as vol
 
 _LOGGER = logging.getLogger(__name__)
 
-##Improvement: save the devices and not the device data in hass.data. Perform auth() during setup. 
 
-
-##TODO: Type-hinting
-##TODO: Fun stuff with presets (create, delete, copy, give custom name, associate a preset to a command type and so ons)
-##TODO: Implement error handling
-##TODO: Possibly refactor code so a
-##TODO: Limit search to remotes and not other broadlink devices! < command entity is registered for each device (which I think would eliminate the need to save the commands in the storage)- IMPORTANTE
-##TODO: Handling the toggle command?(not sure what it is but its avaiable in the broadlink integration )
-##TODO: Send nofication!! -> persistent notifications might not be the best for this
-##TODO: Send notification of new broadlink discovered
-
-
-
-#TODO: The card in the frontend should not render until the discovery process is done.
 async def async_setup(hass, config):
     """Setup broadlink integration"""
 
