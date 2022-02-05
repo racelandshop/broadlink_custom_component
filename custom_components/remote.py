@@ -1,5 +1,6 @@
 """Support for Broadlink remotes."""
 
+from time import time
 from .const import DOMAIN
 from .helpers import decode_packet
 
@@ -22,7 +23,7 @@ import logging
 
 
 _LOGGER = logging.getLogger(__name__)
-LEARNING_TIMEOUT = timedelta(seconds=30)
+LEARNING_TIMEOUT = timedelta(seconds=40)
 
 
 class BroadlinkRemote():
@@ -44,14 +45,17 @@ class BroadlinkRemote():
         """Send a command with the button name"""
         code = self.preset_list[preset].get(button_name)
         if code is None:
-            _LOGGER.warning("No command registered for %s", button_name)
-            #TODO: send notification 
+            self.hass.components.persistent_notification.async_create(
+                "Nennhum comando registado para o butão '{}'".format(button_name),
+                title="Envio de comando",
+                notification_id="send_command_missing",
+                ) 
             return 
         try:
             code = decode_packet(code)
             await self.async_request(self._device.send_data, code)
         except (BroadlinkException, OSError) as err:
-            _LOGGER.error("Error during send_command: %s", err)
+            _LOGGER.debug("Error during send_command: %s", err)
 
 
     async def learn_command(self, button_name, preset): 
@@ -64,36 +68,34 @@ class BroadlinkRemote():
             raise
 
         self.hass.components.persistent_notification.async_create(
-            # f"Press the '{command}' button.",
-            "Pressione um botão do dispositivo para associar ao comando '{}'".format(button_name),
-            title="Learn command",
-            notification_id="learn_command",
+           "Pressione um botão do seu dispositivo para ser aprendido por '{}'".format(self._device.type),
+           title="Aprender comando",
+           notification_id="learn_command",
         )
         code = None
-        try:
+        start_time = dt.utcnow()
+        while (dt.utcnow() - start_time) < LEARNING_TIMEOUT:
+            await asyncio.sleep(1)
+            try:
+                code = await self.async_request(self._device.check_data)
+            except (ReadError, StorageError):
+                continue
             
-            start_time = dt.utcnow()
-            while (dt.utcnow() - start_time) < LEARNING_TIMEOUT:
-                await asyncio.sleep(1)
-                try:
-                    code = await self.async_request(self._device.check_data)
-                except (ReadError, StorageError):
-                    continue
-                
+            decoded_code = b64encode(code).decode("utf8")
+            self.preset_list[preset][button_name] = decoded_code
 
-                decoded_code = b64encode(code).decode("utf8")
-                self.preset_list[preset][button_name] = decoded_code
-                return decoded_code
-
-            raise TimeoutError(
-                "No infrared code received within "
-                f"{LEARNING_TIMEOUT.total_seconds()} seconds"
-            )
-
-        finally:
             self.hass.components.persistent_notification.async_dismiss(
-                notification_id="learn_command"
+               notification_id="learn_command"
             )
+            return decoded_code
+       
+
+        _LOGGER.info("Learning failed")
+        self.hass.components.persistent_notification.async_create(
+            "O dispositivo {} não capturou nenhum comando. Tente novamente".format(self._device.type),
+            title="Aprender comando",
+            notification_id="learn_command",
+        )
 
         
     async def async_request(self, function, *args, **kwargs):

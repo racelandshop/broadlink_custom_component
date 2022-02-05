@@ -45,11 +45,13 @@ async def discover_devices(hass):
     """Discover devices in the network and update the list"""
     
     devices = blk.discover(timeout = TIMEOUT)
+    new_devices = False
     for device in devices: 
         try: 
             formated_mac = format_mac(device.mac)
             if formated_mac not in hass.data[DOMAIN][DEVICE_JSON] and device.type in DOMAINS_AND_TYPES[Platform.REMOTE]:
-                _LOGGER.warning("New device found: %s", formated_mac)
+                _LOGGER.debug("New device found: %s", formated_mac)
+                new_devices = True
                 info = {
                     DEVICE_MAC: formated_mac, 
                     DEVICE_TYPE: device.type,
@@ -61,17 +63,23 @@ async def discover_devices(hass):
                 hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, preset_info)
             
             elif formated_mac in hass.data[DOMAIN][DEVICE_JSON]:
-                _LOGGER.warning("Device already in storage, fecthing commands presets")
                 preset_info = hass.data[DOMAIN][DEVICE_JSON][formated_mac][PRESETS]
                 hass.data[DOMAIN][DEVICE_JSON][formated_mac][ACTIVE] = True
                 hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, preset_info)
             
             elif device.type not in DOMAINS_AND_TYPES[Platform.REMOTE]: 
                 _LOGGER.warning("Device of type %s not supported", device.type)
-
+        
         except: #TODO: Improve error handling
-            _LOGGER.info("Device could mac not be reached %s.", device)
+            _LOGGER.error("Device could mac not be reached %s.", device)
 
+        finally: 
+            if new_devices: 
+                hass.components.persistent_notification.async_create(
+                    "Novos despositivos descobertos",
+                    title="Descoberta de dispositivos",
+                    notification_id="device_discover",
+                )
 
     #Deactivate devices that are are not captured by the network
     mac_list = [format_mac(device.mac) for device in devices]
@@ -116,6 +124,7 @@ async def enter_broadlink_remote_learning_mode(
     button_name = msg["button_name"]
     preset = msg["preset"]
     remote = hass.data[DOMAIN][DEVICE_INFO][mac]
+
     decoded_code = await remote.learn_command(button_name, preset)
     hass.data[DOMAIN][DEVICE_JSON][mac][PRESETS][preset].update({button_name: decoded_code})
     await save_to_storage(hass, hass.data[DOMAIN][DEVICE_JSON])
