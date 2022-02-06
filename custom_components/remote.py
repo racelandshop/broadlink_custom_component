@@ -1,6 +1,7 @@
 """Support for Broadlink remotes."""
 
 from time import time
+from timeit import default_timer
 from .const import DOMAIN
 from .helpers import decode_packet
 
@@ -66,11 +67,12 @@ class BroadlinkRemote():
         try: 
             await self.async_request(self._device.enter_learning)
         except (BroadlinkException, OSError) as err:
-            _LOGGER.debug("Failed to enter learning mode: %s", err)
+            self.hass.components.persistent_notification.async_create(f"Erro ao entrar em modo de aprendizagem. Verifique que comando universal da broadlink ({self._device.type}) está conectada", 
+                title="Erro", notification_id="learn_command_error")
             raise
 
         self.hass.components.persistent_notification.async_create(
-           "Pressione um botão do seu dispositivo para ser aprendido por '{}'".format(self._device.type),
+           f"Pressione um botão do seu dispositivo para ser aprendido por {self._device.type}",
            title="Aprender comando",
            notification_id="learn_command",
         )
@@ -94,13 +96,27 @@ class BroadlinkRemote():
        
 
         _LOGGER.debug("Learn command timed out")
+        ##Cancel sweep_frequency#TODO
         self.hass.components.persistent_notification.async_create(
-            "O dispositivo {} não capturou nenhum comando. Tente novamente".format(self._device.type),
+            f"O dispositivo {self._device.type} não capturou nenhum comando. Tente novamente",
             title="Aprender comando",
             notification_id="learn_command",
         )
 
-        
+    async def check_online(self, timeout): 
+        """Check if the remote is still online"""
+        default_timeout = 10
+        self._device.timeout = timeout
+        try: 
+            self._device.hello()
+        except (ConnectionClosedError, NetworkTimeoutError):
+            self._device.timeout = default_timeout
+            return False
+        self._device.timeout = default_timeout
+        return True
+
+
+
     async def async_request(self, function, *args, **kwargs):
         """Send a request to the device."""
         request = partial(function, *args, **kwargs)
