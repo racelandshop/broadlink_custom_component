@@ -127,7 +127,7 @@ async def enter_broadlink_remote_learning_mode(
     preset = msg["preset"]
     remote = hass.data[DOMAIN][DEVICE_INFO][mac]
     if remote.learning:
-        hass.components.persistent_notification.async_create(f"Já está a configurar um botão. Termine este processo antes de tentar configurar outro.", 
+        hass.components.persistent_notification.async_create("Já está a configurar um botão. Termine este processo antes de tentar configurar outro.", 
             title="Aviso", 
             notification_id= "learning_mode_warning")
         connection.send_result(msg["id"], {"sucess": False, "code": None})

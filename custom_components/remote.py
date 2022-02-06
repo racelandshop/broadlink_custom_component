@@ -41,7 +41,7 @@ class BroadlinkRemote():
         self._device = device 
         self.preset_list = preset_list
         self.learning = False
-
+        _LOGGER.info("Debugging: The device ip is %s ", self._device.host[0])
 
     async def send_command(self, button_name, preset): 
         """Send a command with the button name"""
@@ -59,14 +59,25 @@ class BroadlinkRemote():
         except (BroadlinkException, OSError) as err:
             _LOGGER.debug("Error during send_command: %s", err)
 
-
     async def learn_command(self, button_name, preset): 
-        """Learn command from the device.
-        Returns code to save in the storage"""
+        """"Learn a command from the device. Updates the self.learning state of the instance. 
+        self.learning acts as a lock to prevent the learning process to co-occur"""
         self.learning = True
+        try: 
+            return await self._learn_command(button_name, preset)
+        except (BroadlinkException, OSError) as err:
+            raise
+        finally: 
+            self.learning = False
+
+
+    async def _learn_command(self, button_name, preset): 
+        """Learn command from the device.
+        Returns code"""
         try: 
             await self.async_request(self._device.enter_learning)
         except (BroadlinkException, OSError) as err:
+            self.learning = False
             self.hass.components.persistent_notification.async_create(f"Erro ao entrar em modo de aprendizagem. Verifique que comando universal da broadlink ({self._device.type}) está conectada", 
                 title="Erro", notification_id="learn_command_error")
             raise
@@ -102,19 +113,6 @@ class BroadlinkRemote():
             title="Aprender comando",
             notification_id="learn_command",
         )
-
-    async def check_online(self, timeout): 
-        """Check if the remote is still online"""
-        default_timeout = 10
-        self._device.timeout = timeout
-        try: 
-            self._device.hello()
-        except (ConnectionClosedError, NetworkTimeoutError):
-            self._device.timeout = default_timeout
-            return False
-        self._device.timeout = default_timeout
-        return True
-
 
 
     async def async_request(self, function, *args, **kwargs):
