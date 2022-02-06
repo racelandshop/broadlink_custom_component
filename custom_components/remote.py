@@ -8,14 +8,14 @@ from .helpers import decode_packet
 import asyncio
 from base64 import b64encode, b64decode
 from broadlink.exceptions import (
-    AuthenticationError,
     AuthorizationError,
     BroadlinkException,
     ConnectionClosedError,
     ReadError,
-    StorageError,
-    NetworkTimeoutError,
+    StorageError
 )
+from broadlink.remote import rmpro
+
 from datetime import timedelta
 from functools import partial
 from homeassistant.util import dt
@@ -24,6 +24,8 @@ import logging
 
 
 _LOGGER = logging.getLogger(__name__)
+
+LEARNING_TIMEOUT_RMPRO = timedelta(seconds=30)
 LEARNING_TIMEOUT = timedelta(seconds=40)
 
 
@@ -41,7 +43,7 @@ class BroadlinkRemote():
         self._device = device 
         self.preset_list = preset_list
         self.learning = False
-        _LOGGER.info("Debugging: The device ip is %s ", self._device.host[0])
+        self.learningTimeout = LEARNING_TIMEOUT_RMPRO if isinstance(self._device, rmpro) else LEARNING_TIMEOUT
 
     async def send_command(self, button_name, preset): 
         """Send a command with the button name"""
@@ -102,12 +104,11 @@ class BroadlinkRemote():
             self.hass.components.persistent_notification.async_dismiss(
                notification_id="learn_command"
             )
-            self.learning = False
             return decoded_code
-       
 
-        _LOGGER.debug("Learn command timed out")
-        ##Cancel sweep_frequency#TODO
+        if isinstance(self._device, rmpro): 
+            self.async_request(self._device.cancel_sweep_frequency)
+
         self.hass.components.persistent_notification.async_create(
             f"O dispositivo {self._device.type} não capturou nenhum comando. Tente novamente",
             title="Aprender comando",
