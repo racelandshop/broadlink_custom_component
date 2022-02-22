@@ -49,39 +49,36 @@ async def discover_devices(hass):
     devices = blk.discover(timeout = TIMEOUT)
     new_devices = False
     for device in devices: 
-        try: 
-            formated_mac = format_mac(device.mac)
-            if formated_mac not in hass.data[DOMAIN][DEVICE_JSON] and device.type in DOMAINS_AND_TYPES[Platform.REMOTE]:
-                _LOGGER.debug("New device found: %s", formated_mac)
-                new_devices = True
-                info = {
-                    DEVICE_MAC: formated_mac, 
-                    DEVICE_TYPE: device.type,
-                    PRESETS: {"1": {}, "2": {}, "3": {}, "4": {}, "5": {}}, 
-                    ACTIVE: True
-                }
 
-                hass.data[DOMAIN][DEVICE_JSON][formated_mac] = info
-                hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, preset_info)
-            
-            elif formated_mac in hass.data[DOMAIN][DEVICE_JSON]:
-                preset_info = hass.data[DOMAIN][DEVICE_JSON][formated_mac][PRESETS]
-                hass.data[DOMAIN][DEVICE_JSON][formated_mac][ACTIVE] = True
-                hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, preset_info)
-            
-            elif device.type not in DOMAINS_AND_TYPES[Platform.REMOTE]: 
-                _LOGGER.warning("Device of type %s not supported", device.type)
+        formated_mac = format_mac(device.mac)
+        if formated_mac not in hass.data[DOMAIN][DEVICE_JSON] and device.type in DOMAINS_AND_TYPES[Platform.REMOTE]:
+            _LOGGER.debug("New device found: %s", formated_mac)
+            new_devices = True
+            info = {
+                DEVICE_MAC: formated_mac, 
+                DEVICE_TYPE: device.type,
+                PRESETS: {"1": {}, "2": {}, "3": {}, "4": {}, "5": {}, "6": {}}, 
+                ACTIVE: True
+            }
+
+            hass.data[DOMAIN][DEVICE_JSON][formated_mac] = info
+            hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, preset_info)
         
-        except: #TODO: Improve error handling
-            _LOGGER.error("Device could mac not be reached %s.", device)
+        elif formated_mac in hass.data[DOMAIN][DEVICE_JSON]:
+            preset_info = hass.data[DOMAIN][DEVICE_JSON][formated_mac][PRESETS]
+            hass.data[DOMAIN][DEVICE_JSON][formated_mac][ACTIVE] = True
+            hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, preset_info)
+        
+        elif device.type not in DOMAINS_AND_TYPES[Platform.REMOTE]: 
+            _LOGGER.warning("Device of type %s not supported", device.type)
 
-        finally: 
-            if new_devices: 
-                hass.components.persistent_notification.async_create(
-                    "Novos despositivos descobertos",
-                    title="Descoberta de dispositivos",
-                    notification_id="device_discover",
-                )
+        
+        if new_devices: 
+            hass.components.persistent_notification.async_create(
+                "Novos despositivos descobertos",
+                title="Descoberta de dispositivos",
+                notification_id="device_discover",
+            )
 
     #Deactivate devices that are are not captured by the network
     mac_list = [format_mac(device.mac) for device in devices]
