@@ -60,7 +60,8 @@ async def discover_devices(hass):
                 PRESETS: {"1": {}, "2": {}, "3": {}, "4": {}, "5": {}, "6": {}}, 
                 ACTIVE: True
             }
-
+            
+            preset_info = hass.data[DOMAIN][DEVICE_JSON][formated_mac][PRESETS]
             hass.data[DOMAIN][DEVICE_JSON][formated_mac] = info
             hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, preset_info)
         
