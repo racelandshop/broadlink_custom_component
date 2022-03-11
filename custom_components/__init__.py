@@ -1,7 +1,7 @@
 """The broadlink card integration"""
 
 from pickle import TRUE
-from .const import DEVICE_JSON, TIMEOUT, DOMAIN, DOMAINS_AND_TYPES, DEVICE_INFO, PRESETS, MAC, DEVICE_MAC, DEVICE_TYPE, ACTIVE
+from .const import DEVICE_JSON, TIMEOUT, DOMAIN, DOMAINS_AND_TYPES, DEVICE_INFO, PRESETS, MAC, DEVICE_MAC, DEVICE_TYPE, ACTIVE, FAIL_NETWORK_CONNECTION
 from .remote import BroadlinkRemote
 from .helpers import format_mac
 
@@ -33,13 +33,20 @@ async def async_setup(hass, config):
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][DEVICE_JSON] = await load_from_storage(hass)
     hass.data[DOMAIN][DEVICE_INFO] = {}
-    await discover_devices(hass)
-
-    hass.components.websocket_api.async_register_command(discover_new_broadlink_devices)
-    hass.components.websocket_api.async_register_command(send_broadlink_devices)
-    hass.components.websocket_api.async_register_command(enter_broadlink_remote_learning_mode)
-    hass.components.websocket_api.async_register_command(send_command_broadlink)
-    return True
+    
+    try: 
+        await discover_devices(hass)
+    except OSError: 
+        _LOGGER.warning(FAIL_NETWORK_CONNECTION)
+        await save_to_storage(hass, hass.data[DOMAIN][DEVICE_JSON])
+        
+    
+    finally: 
+        hass.components.websocket_api.async_register_command(discover_new_broadlink_devices)
+        hass.components.websocket_api.async_register_command(send_broadlink_devices)
+        hass.components.websocket_api.async_register_command(enter_broadlink_remote_learning_mode)
+        hass.components.websocket_api.async_register_command(send_command_broadlink)
+        return True
 
 
 
@@ -61,7 +68,7 @@ async def discover_devices(hass):
                 ACTIVE: True
             }
             
-            preset_info = hass.data[DOMAIN][DEVICE_JSON][formated_mac][PRESETS]
+            preset_info = {"1": {}, "2": {}, "3": {}, "4": {}, "5": {}, "6": {}}
             hass.data[DOMAIN][DEVICE_JSON][formated_mac] = info
             hass.data[DOMAIN][DEVICE_INFO][formated_mac] = BroadlinkRemote(hass, device, preset_info)
         
@@ -98,10 +105,13 @@ async def discover_new_broadlink_devices(
     hass: HomeAssistant, connection: ActiveConnection, msg: dict
 ):
     """Discover broadlink devices"""
-
-    await discover_devices(hass)
-    devices = get_active_devices(hass) 
-    connection.send_result(msg["id"], {"sucess": True, "devices": devices}) 
+    try: 
+        await discover_devices(hass)
+        devices = get_active_devices(hass) 
+        connection.send_result(msg["id"], {"sucess": True, "devices": devices}) 
+    except OSError: 
+        _LOGGER.warning(FAIL_NETWORK_CONNECTION)
+        connection.send_result(msg["id"], {"sucess": False, "devices": []}) 
 
 
 @websocket_api.websocket_command({vol.Required("type"): "broadlink/send_devices"})
