@@ -2,7 +2,7 @@
 
 from time import time
 from timeit import default_timer
-from .const import DOMAIN
+from .const import COMMANDS, DOMAIN
 from .helpers import decode_packet
 
 import asyncio
@@ -47,7 +47,7 @@ class BroadlinkRemote():
 
     async def send_command(self, button_name, preset): 
         """Send a command with the button name"""
-        code = self.preset_list[preset].get(button_name)
+        code = self.preset_list[preset][COMMANDS].get(button_name)
         if code is None:
             self.hass.components.persistent_notification.async_create(
                 "Nennhum comando registado para o butão '{}'".format(button_name),
@@ -99,7 +99,9 @@ class BroadlinkRemote():
                 continue
             
             decoded_code = b64encode(code).decode("utf8")
-            self.preset_list[preset][button_name] = decoded_code
+            print("PRESET", preset)
+            print("[!] preset_list", self.preset_list)
+            self.preset_list[preset][COMMANDS][button_name] = decoded_code
 
             self.hass.components.persistent_notification.async_dismiss(
                notification_id="learn_command"
