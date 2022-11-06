@@ -5,7 +5,7 @@ import asyncio
 from time import time
 from timeit import default_timer
 
-from .const import COMMANDS, DOMAIN, DEVICE_MAC, PRESETS
+from .const import COMMANDS, DOMAIN, DEVICE_MAC, MAC, PRESETS
 from .helpers import decode_packet, setup_platform, create_entity
 from .services import setup_services
 
@@ -21,6 +21,9 @@ from broadlink.remote import rmpro
 
 from datetime import timedelta
 from functools import partial
+
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.util import dt
 
 from homeassistant.components.remote import (
@@ -85,10 +88,18 @@ class BroadlinkRemote(RemoteEntity):
         self._attr_supported_features = SUPPORT_LEARN_COMMAND | SUPPORT_DELETE_COMMAND
         self._attr_unique_id = identifier
 
+        self._attr_device_info = DeviceInfo(
+            entry_type=DeviceEntryType.SERVICE,
+            identifiers={(DOMAIN, self.broadlink_data[DEVICE_MAC])},
+            manufacturer="broadlink",
+            name=device.model,
+        )
+
 
     async def async_send_command(self, button_name): 
         """Send a command with the button name"""
-        code = self.broadlink_data[PRESETS][self._attr_name][COMMANDS][button_name]
+        command_list = self.broadlink_data[PRESETS][self._attr_name][COMMANDS] 
+        code = command_list.get([button_name], None)
         if code is None:
             self.hass.components.persistent_notification.async_create(
                 "Nennhum comando registado para o butão '{}'".format(button_name),

@@ -5,7 +5,7 @@ from homeassistant.helpers import entity_registry as er
 
 import logging
 
-from .helpers import format_mac, create_entity, save_to_storage
+from .helpers import format_mac, create_entity
 from .const import (ACTIVE, COMMANDS, DEVICE_INFO, DEVICE_JSON, DEVICE_MAC,
                     DEVICE_TYPE, DOMAIN, DOMAINS_AND_TYPES,
                     FAIL_NETWORK_CONNECTION, LOCKED, MAC, PRESETS, REMOTE_DOMAIN, TIMEOUT,

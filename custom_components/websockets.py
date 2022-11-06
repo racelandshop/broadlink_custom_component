@@ -13,10 +13,7 @@ from homeassistant.components.websocket_api.connection import ActiveConnection
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import async_get_platforms
 
-from .const import (ACTIVE, COMMANDS, DEVICE_INFO, DEVICE_JSON, DEVICE_MAC,
-                    DEVICE_TYPE, DOMAIN, DOMAINS_AND_TYPES,
-                    FAIL_NETWORK_CONNECTION, LOCKED, MAC, PRESETS, TIMEOUT,
-                    TYPE)
+from .const import (DOMAIN, FAIL_NETWORK_CONNECTION)
                     
 from .helpers import discover_devices, get_active_devices, save_to_storage
 
@@ -27,7 +24,6 @@ async def setup_websocket(hass):
     hass.components.websocket_api.async_register_command(discover_new_broadlink_devices)
     hass.components.websocket_api.async_register_command(send_broadlink_devices)
     hass.components.websocket_api.async_register_command(enter_broadlink_remote_learning_mode)
-    hass.components.websocket_api.async_register_command(send_command_broadlink)
     hass.components.websocket_api.async_register_command(add_remote_broadlink)
     hass.components.websocket_api.async_register_command(remove_remote_broadlink)
     return True
@@ -57,6 +53,7 @@ async def send_broadlink_devices(
     """Send saved broadlink devices to the frontend"""  
     devices = get_active_devices(hass)
     connection.send_result(msg["id"], {"sucess": True, "devices": devices}) 
+
 
 
 @websocket_api.websocket_command({
@@ -108,33 +105,6 @@ async def enter_broadlink_remote_learning_mode(
 
     return
 
-
-@websocket_api.websocket_command(
-    {
-        vol.Required("type"): "broadlink/send_command", 
-        vol.Required("mac"): str, 
-        vol.Required("button_name"): str, 
-        vol.Required("preset"): str
-    }
-)
-@websocket_api.async_response
-async def send_command_broadlink(
-    hass: HomeAssistant, connection: ActiveConnection, msg: dict
-):
-    """Send a command to a broadlink remote"""
-    mac = msg["mac"]
-    button_name = msg["button_name"]
-    preset = msg["preset"]
-    remote = hass.data[DOMAIN][DEVICE_INFO][mac]
-    command = remote.preset_list[preset][COMMANDS]
-    if remote: 
-        await remote.send_command(button_name, preset)
-    else: 
-        _LOGGER.error("The device with the mac %s is not registered", msg["mac"])
-        connection.send_result(msg["id"], {"sucess": False}) 
-        return 
-    
-    connection.send_result(msg["id"], {"sucess": True})
 
 @websocket_api.websocket_command({vol.Required("type"): "broadlink/add_remote", vol.Required("mac"): str, vol.Required("preset"): str, vol.Required("remote_type"): str})
 @websocket_api.async_response
