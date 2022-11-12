@@ -27,7 +27,7 @@ async def discover_devices(hass):
             device.auth()
             device.set_lock(False)
         except:
-            _LOGGER.error("Erro when trying to authenticate the device %s", formated_mac)
+            _LOGGER.error("Error when trying to authenticate the device %s", formated_mac)
         
         device_list.append(device)
 
