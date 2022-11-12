@@ -6,10 +6,11 @@ from homeassistant.helpers import entity_registry as er
 import logging
 
 from .helpers import format_mac, create_entity
-from .const import (ACTIVE, COMMANDS, DEVICE_INFO, DEVICE_JSON, DEVICE_MAC,
-                    DEVICE_TYPE, DOMAIN, DOMAINS_AND_TYPES,
-                    FAIL_NETWORK_CONNECTION, LOCKED, MAC, PRESETS, REMOTE_DOMAIN, TIMEOUT,
+from .const import (ACTIVE, COMMANDS, DEVICE_MAC,
+                    DEVICE_TYPE, DOMAINS_AND_TYPES,
+                    LOCKED, PRESETS, REMOTE_DOMAIN,
                     TYPE)
+
 
 _LOGGER = logging.getLogger(__name__)
 

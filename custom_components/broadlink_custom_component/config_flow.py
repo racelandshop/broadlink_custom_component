@@ -6,7 +6,6 @@ import secrets
 
 from .const import (
     DOMAIN,
-
 )
 
 
