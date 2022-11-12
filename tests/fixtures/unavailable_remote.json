@@ -1,0 +1,21 @@
+{ 
+    "found_devices":  {},
+    "storage_data": {
+        "25:df:a7:fb:b7:a9": {
+            "device_mac": "25:df:a7:fb:b7:a9",
+            "device_type": "RM4PRO", 
+            "presets": {},
+            "active": true,
+            "is_locked": false
+        }
+    },
+    "hass_data": {
+        "25:df:a7:fb:b7:a9": {
+            "device_mac": "25:df:a7:fb:b7:a9",
+            "device_type": "RM4PRO", 
+            "presets": {},
+            "active": false,
+            "is_locked": false
+        }
+    }
+}

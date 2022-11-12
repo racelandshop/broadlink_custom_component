@@ -1,7 +1,5 @@
 """Helpers for the Broadlink remote."""
 
-from typing import final
-
 import broadlink as blk
 from broadlink.exceptions import BroadlinkException
 
@@ -12,16 +10,12 @@ from homeassistant.helpers.storage import Store
 
 from slugify import slugify
 
-from .const import (ACTIVE, COMMANDS, DEVICE_INFO, DEVICE_JSON, DEVICE_MAC,
-                    DEVICE_TYPE, DOMAIN, DOMAINS_AND_TYPES,
-                    FAIL_NETWORK_CONNECTION, LOCKED, MAC, PRESETS, TIMEOUT,
-                    TYPE)
+from .const import (ACTIVE, DEVICE_MAC, DEVICE_TYPE, DOMAIN,  LOCKED, MAC, PRESETS, TIMEOUT)
+
 
 import logging
 
 _LOGGER = logging.getLogger(__name__)
-
-
 
 async def discover_devices(hass): 
     """Discover devices connected to the network"""
@@ -48,7 +42,6 @@ def get_active_devices(hass):
                 MAC: device_mac, 
                 DEVICE_TYPE: device_data[DEVICE_TYPE],
                 LOCKED: device_data[LOCKED],
-                #PRESETS: hass.data[DOMAIN][DEVICE_INFO][device_mac].preset_list
                 PRESETS: device_data[PRESETS]
             })
     return devices
