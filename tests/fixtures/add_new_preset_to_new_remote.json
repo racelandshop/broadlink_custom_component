@@ -1,0 +1,34 @@
+{ 
+    "preset":  {
+        "name": "teste", 
+        "type": "tv",
+        "mac": "25:df:a7:fb:b7:a9"
+    },
+    "found_devices":  {
+        "rm4pro":{
+            "name": "rm4",
+            "host": "192.168.1.138",
+            "model": "RM4 PRO",
+            "manufacturer":"Broadlink",
+            "devtype": 24994,
+            "mac": "25:df:a7:fb:b7:a9",
+            "type": "RM4PRO",
+            "device_is_locked": false
+        }
+    },
+    "hass_data": {
+        "25:df:a7:fb:b7:a9": {
+            "device_mac": "25:df:a7:fb:b7:a9",
+            "device_type": "RM4PRO", 
+            "presets": {
+                "teste":{
+                    "commands": {},
+                    "type": "tv",
+                    "entity_id": "remote.teste"
+                }
+            },
+            "active": true,
+            "is_locked": false
+        }
+    }
+}

@@ -39,3 +39,10 @@ def skip_notifications_fixture():
     ):
         yield
 
+
+# # This fixture is used to prevent the integration from attempting to create entities
+# @pytest.fixture(name="skip_creating_entity", autouse=True)
+# def skip_creating_entities():
+#     """Skip create entity calls."""
+#     with patch("custom_components.broadlink_custom_component.main.create_entity"):
+#         yield

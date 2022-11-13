@@ -9,7 +9,14 @@ TEST_DATA_JSON = {
         "all_remotes_with_storage_data.json", 
         "locked_remote.json",
         "unavailable_remote.json"
-        ]
+        ],
+    "test_main": [
+        "add_new_preset_to_new_remote.json", 
+        "add_new_preset_to_existing_remote.json",
+    ], 
+    "test_remove_preset": [
+        "remove_preset_from_existing_remote.json"
+    ]
 }
 
 
