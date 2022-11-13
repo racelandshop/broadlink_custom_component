@@ -28,7 +28,7 @@ class RacelandBroadlink:
         new_device_flag = False
         for device in discover_info: 
             formated_mac = format_mac(device.mac)
-            self.devices[formated_mac] = device
+            self._devices[formated_mac] = device
             if formated_mac not in self.storage_data and device.type in DOMAINS_AND_TYPES[Platform.REMOTE]:
                 new_device_flag = True
                 info = {
@@ -68,7 +68,7 @@ class RacelandBroadlink:
             }
         if mac in self.storage_data.keys(): 
             entity_id = get_entity_id(self.hass, preset_name)
-            await create_entity(self.hass, self.storage_data[mac], self.devices[mac], preset_name)
+            await create_entity(self.hass, self.storage_data[mac], self._devices[mac], preset_name)
             info = {
                 COMMANDS: {},
                 TYPE: remote_type,
