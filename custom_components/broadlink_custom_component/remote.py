@@ -27,6 +27,15 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.util import dt
 
 from homeassistant.components.remote import (
+    ATTR_ALTERNATIVE,
+    ATTR_COMMAND_TYPE,
+    ATTR_DELAY_SECS,
+    ATTR_DEVICE,
+    ATTR_NUM_REPEATS,
+    DEFAULT_DELAY_SECS,
+    SERVICE_DELETE_COMMAND,
+    SERVICE_LEARN_COMMAND,
+    SERVICE_SEND_COMMAND,
     SUPPORT_DELETE_COMMAND,
     SUPPORT_LEARN_COMMAND,
     RemoteEntity
@@ -90,7 +99,7 @@ class BroadlinkRemote(RemoteEntity):
     async def async_send_command(self, button_name): 
         """Send a command with the button name"""
         command_list = self.broadlink_data[PRESETS][self._attr_name][COMMANDS] 
-        code = command_list.get([button_name], None)
+        code = command_list.get(button_name, None)
         if code is None:
             self.hass.components.persistent_notification.async_create(
                 "Nennhum comando registado para o butão '{}'".format(button_name),
