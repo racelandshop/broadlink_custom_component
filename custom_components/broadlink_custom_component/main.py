@@ -28,7 +28,7 @@ class RacelandBroadlink:
         new_device_flag = False
         for device in discover_info: 
             formated_mac = format_mac(device.mac)
-l            self._devices[formated_mac] = device
+            self._devices[formated_mac] = device
             if formated_mac not in self.storage_data and device.type in DOMAINS_AND_TYPES[Platform.REMOTE]:
                 new_device_flag = True
                 info = {
