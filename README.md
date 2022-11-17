@@ -34,6 +34,16 @@ target:
   entity_id: remote.foo
 ```
 
+This service also supports devices 
+
+```
+service: broadlink_custom_card.send_command
+data:
+  button_name: PowerOff
+target:
+  device_id: 242424156a9b790ffd0f2032b132e4d4
+```
+
 ## Acknowledgements
 
 Some code was inspired by the official broadlink integration in homeassistant (https://github.com/home-assistant/core/tree/dev/homeassistant/components/broadlink)
