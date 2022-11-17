@@ -55,7 +55,7 @@ async def async_setup_platform(hass, config, async_add_devices, discovery_info=N
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the remote platform from a config entry."""
-    #Load up camera entities from storage. 
+    #Load up remote entities from storage. 
     await async_setup_platform(hass, {}, async_add_entities)
 
     await setup_services()
