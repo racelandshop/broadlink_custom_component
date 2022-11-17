@@ -75,7 +75,7 @@ class BroadlinkRemote(RemoteEntity):
         self.learningTimeout = LEARNING_TIMEOUT_RMPRO if isinstance(self.device, rmpro) else LEARNING_TIMEOUT
         
         self._attr_name = preset_name
-        self._attr_is_on = True
+        self._attr_is_on = False
         self._attr_supported_features = SUPPORT_LEARN_COMMAND | SUPPORT_DELETE_COMMAND
         self._attr_unique_id = identifier
 
@@ -86,6 +86,19 @@ class BroadlinkRemote(RemoteEntity):
             name=device.model,
         )
 
+    async def async_turn_on(self, **kwargs):
+        """Turn on the remote."""
+        self._attr_is_on = True
+        self.async_write_ha_state()
+        await self.async_send_command("Power")
+        
+        await asyncio.sleep(1)
+        await self.async_turn_off()
+
+    async def async_turn_off(self, **kwargs):
+        """Turn of the remote."""
+        self._attr_is_on = False
+        self.async_write_ha_state()
 
     async def async_send_command(self, button_name): 
         """Send a command with the button name"""
