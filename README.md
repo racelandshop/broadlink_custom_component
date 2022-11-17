@@ -16,11 +16,23 @@ Although great, the classic broadlink integration does not allow to run discover
 
 ## Configuration
 
-To configure simply put this line in the configuration.yaml file:
+To configure simply put this line in the configuration.yaml file. Alternatively, this integration can also be configured through the config flow:
 Also ensure the broadlink devices have been connected to your network
 
 ```
 broadlink_custom_card:
+```
+
+### Send services 
+To send a command to broadlink entity you can use the service `broadlink_custom_card.send_command`
+
+```
+service: broadlink_custom_card.send_command
+data:
+  button_name: PowerOff
+target:
+  entity_id: remote.foo
+
 ```
 
 ## Acknowledgements
