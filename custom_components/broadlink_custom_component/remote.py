@@ -27,15 +27,6 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.util import dt
 
 from homeassistant.components.remote import (
-    ATTR_ALTERNATIVE,
-    ATTR_COMMAND_TYPE,
-    ATTR_DELAY_SECS,
-    ATTR_DEVICE,
-    ATTR_NUM_REPEATS,
-    DEFAULT_DELAY_SECS,
-    SERVICE_DELETE_COMMAND,
-    SERVICE_LEARN_COMMAND,
-    SERVICE_SEND_COMMAND,
     SUPPORT_DELETE_COMMAND,
     SUPPORT_LEARN_COMMAND,
     RemoteEntity

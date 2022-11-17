@@ -2,7 +2,7 @@
 
 import logging
 
-from homeassistant.const import Platform, __version__ as HAVERSION
+from homeassistant.const import Platform
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
