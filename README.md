@@ -32,7 +32,6 @@ data:
   button_name: PowerOff
 target:
   entity_id: remote.foo
-
 ```
 
 ## Acknowledgements
