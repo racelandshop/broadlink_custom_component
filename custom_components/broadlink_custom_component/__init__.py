@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import (DOMAIN,FAIL_NETWORK_CONNECTION, REMOTE_DOMAIN)
+from .const import (DOMAIN,FAIL_NETWORK_CONNECTION)
 from .helpers import discover_devices, load_from_storage, save_to_storage
 from .main import RacelandBroadlink
 from .websockets import setup_websocket

@@ -37,7 +37,7 @@ def get_active_devices(hass):
     """Get all active devices and return their information"""
     devices = [] 
     for device_mac,device_data in hass.data[DOMAIN].storage_data.items(): 
-        if device_data[ACTIVE]: 
+        if device_data[ACTIVE] == True: 
             devices.append({
                 MAC: device_mac, 
                 DEVICE_TYPE: device_data[DEVICE_TYPE],
