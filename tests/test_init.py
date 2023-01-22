@@ -1,5 +1,6 @@
 """Tests init in broadlink custom component"""
 import json
+import pytest
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry, load_fixture
 
@@ -9,7 +10,7 @@ from custom_components.broadlink_custom_component import setup_data
 
 from . import TEST_DATA_JSON, get_mock_api
 
-
+@pytest.mark.asyncio
 async def test_async_setup_entry(hass): 
     """Test async_setup_entry"""
 

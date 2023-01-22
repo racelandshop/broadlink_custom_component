@@ -1,0 +1,7 @@
+# Strictly for tests
+pytest-homeassistant-custom-component==0.12.29
+janus==1.0.0
+
+# Required for tests and dev
+home-assistant-frontend
+broadlink

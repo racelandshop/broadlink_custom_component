@@ -1,5 +1,6 @@
 """Tests init in broadlink custom component"""
 import json
+import pytest 
 from unittest.mock import patch
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry, load_fixture
@@ -10,7 +11,7 @@ from custom_components.broadlink_custom_component import setup_data
 
 from . import TEST_DATA_JSON, get_mock_api
 
-
+@pytest.mark.asyncio
 async def test_add_preset(hass): 
     """Test async_add_preset"""
 
@@ -39,6 +40,7 @@ async def test_add_preset(hass):
             #Check storage data in main
             assert hass.data[DOMAIN].storage_data == hass_data
 
+@pytest.mark.asyncio
 async def test_remove_preset(hass): 
     """Test async_remove_preset"""
 
