@@ -1,0 +1,49 @@
+{ 
+    "found_devices":  {
+        "rm4pro":{
+            "name": "rm4",
+            "host": "192.168.1.138",
+            "model": "RM4 PRO",
+            "manufacturer":"Broadlink",
+            "devtype": 24994,
+            "mac": "25:df:a7:fb:b7:a9",
+            "type": "RM4PRO",
+            "device_is_locked": true
+        },
+        "rm4promini":{
+            "name": "rm4mini",
+            "host": "192.168.1.130",
+            "model": "RM4 MINI",
+            "manufacturer":"Broadlink",
+            "devtype": 21014,
+            "mac": "26:df:a7:fb:b7:a9",
+            "type": "RM4MINI",
+            "device_is_locked": true
+        }
+    },
+    "storage_data": {
+        "25:df:a7:fb:b7:a9": {
+            "device_mac": "25:df:a7:fb:b7:a9",
+            "device_type": "RM4PRO", 
+            "presets": {},
+            "active": true,
+            "is_locked": false
+        }
+    },
+    "hass_data": {
+        "25:df:a7:fb:b7:a9": {
+            "device_mac": "25:df:a7:fb:b7:a9",
+            "device_type": "RM4PRO", 
+            "presets": {},
+            "active": true,
+            "is_locked": true
+    },
+        "26:df:a7:fb:b7:a9": {
+            "device_mac": "26:df:a7:fb:b7:a9",
+            "device_type": "RM4MINI", 
+            "presets": {},
+            "active": true,
+            "is_locked": true
+        }
+    }
+}

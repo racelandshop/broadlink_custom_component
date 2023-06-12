@@ -1,0 +1,17 @@
+##Describes the format for available remote services
+
+send_command:
+  name: Send Command
+  description: Sends a command or a list of commands to a device.
+  target:
+    entity:
+      domain: remote
+  fields:
+    button_name:
+      name: Button Name
+      description: A single Button Name of a name of buttons to send
+      required: true
+      example: "Power On"
+      selector:
+        text:
+

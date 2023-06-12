@@ -1,6 +1,22 @@
 """Cost for broadlink custom card integration"""
 from homeassistant.const import Platform
 
+DOMAIN = "broadlink_custom_card"
+TIMEOUT = 5
+REMOTE_DOMAIN = "remote"
+DEVICE_INFO  = "devices_info"
+COMMANDS = "commands"
+MAC = "mac"
+DEVICE_MAC = "device_mac"
+DEVICE_TYPE = "device_type"
+DEVICE_JSON = "devices_storage"
+PRESETS = "presets"
+ACTIVE = "active"
+LOCKED = "is_locked"
+FAIL_NETWORK_CONNECTION = "Could not connect to the network. Please ensure the connection is working."
+TYPE = "type"
+NAME = "name"
+
 DOMAINS_AND_TYPES = {
     Platform.REMOTE: {"RM4MINI", "RM4PRO", "RMMINI", "RMMINIB", "RMPRO"},
     Platform.SENSOR: {
@@ -33,16 +49,3 @@ DOMAINS_AND_TYPES = {
 }
 
 
-TIMEOUT = 5
-DOMAIN = "broadlink_custom_card"
-DEVICE_INFO  = "devices_info"
-COMMANDS = "commands"
-MAC = "mac"
-DEVICE_MAC = "device_mac"
-DEVICE_TYPE = "device_type"
-DEVICE_JSON = "devices_storage"
-PRESETS = "presets"
-ACTIVE = "active"
-LOCKED = "is_locked"
-FAIL_NETWORK_CONNECTION = "Could not connect to the network. Please ensure the connection is working."
-TYPE = "type"
